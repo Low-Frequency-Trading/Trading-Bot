@@ -1,31 +1,56 @@
 #include <gtest/gtest.h>
-#include "option.hpp"
+#include "call_option.hpp"
+#include "put_option.hpp"
 
-using option_type = Option<double, uint32_t>;
-
-TEST(OptionTest, Constructor)
-{
-  option_type *test_obj = new option_type(100.0, 0.2, 0.01, 10, 100.0);
-  EXPECT_EQ(test_obj->get_strike_price(), 100.0);
-  EXPECT_EQ(test_obj->get_volatility(), 0.2);
-  EXPECT_EQ(test_obj->get_interest_rate(), 0.01);
-  EXPECT_EQ(test_obj->get_expire_date(), 10U);
-  EXPECT_EQ(test_obj->get_underlying_asset(), 100.0);
-}
-
-TEST(OptionTest, CopyConstructor)
-{
-  option_type *test_obj = new option_type(100.0, 0.2, 0.01, 10, 100.0);
-  option_type copy_obj(*test_obj);
+TEST(OptionTest, CopyConstructor) {
+  Option *test_obj = new Option(100.0, 0.2, 0.01, 10.0, 100.0);
+  Option copy_obj(*test_obj);
 
   EXPECT_NE(&copy_obj, test_obj);
 
-  EXPECT_EQ(test_obj->get_strike_price(), copy_obj.get_strike_price());
-  EXPECT_EQ(test_obj->get_volatility(), copy_obj.get_volatility());
-  EXPECT_EQ(test_obj->get_interest_rate(), copy_obj.get_interest_rate());
-  EXPECT_EQ(test_obj->get_expire_date(), copy_obj.get_expire_date());
-  EXPECT_EQ(test_obj->get_underlying_asset(), copy_obj.get_underlying_asset());
+  EXPECT_EQ(test_obj->K_, copy_obj.K_);
+  EXPECT_EQ(test_obj->Vol_, copy_obj.Vol_);
+  EXPECT_EQ(test_obj->r_, copy_obj.r_);
+  EXPECT_EQ(test_obj->T_, copy_obj.T_);
+  EXPECT_EQ(test_obj->underlying_asset_, copy_obj.underlying_asset_);
 }
+
+TEST(OptionTest, Call_Greek) {
+  Option *opt = new Option(597.5, 0.5392, 0.0156, 14.0, 599.05);
+
+  CallDelta Delta(opt);
+  CallGamma Gamma(opt);
+  CallVega Vega(opt);
+  CallRho Rho(opt);
+  CallPrice Price(opt);
+  CallTheta Theta(opt);
+
+  EXPECT_FALSE(std::signbit(Price(opt->underlying_asset_)));
+  EXPECT_FALSE(std::signbit(Delta(opt->underlying_asset_)));
+  EXPECT_FALSE(std::signbit(Gamma(opt->underlying_asset_)));
+  EXPECT_FALSE(std::signbit(Vega(opt->underlying_asset_)));
+  EXPECT_TRUE(std::signbit(Theta(opt->underlying_asset_)));
+  EXPECT_FALSE(std::signbit(Rho(opt->underlying_asset_)));
+}
+
+TEST(OptionTest, Put_Greek) {
+  Option *opt = new Option(597.5, 0.5392, 0.0156, 14.0, 599.05);
+
+  PutDelta Delta(opt);
+  PutGamma Gamma(opt);
+  PutVega Vega(opt);
+  PutRho Rho(opt);
+  PutPrice Price(opt);
+  PutTheta Theta(opt);
+
+  EXPECT_FALSE(std::signbit(Price(opt->underlying_asset_)));
+  EXPECT_TRUE(std::signbit(Delta(opt->underlying_asset_)));
+  EXPECT_FALSE(std::signbit(Gamma(opt->underlying_asset_)));
+  EXPECT_FALSE(std::signbit(Vega(opt->underlying_asset_)));
+  EXPECT_TRUE(std::signbit(Theta(opt->underlying_asset_)));
+  EXPECT_TRUE(std::signbit(Rho(opt->underlying_asset_)));
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

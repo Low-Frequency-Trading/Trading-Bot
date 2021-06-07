@@ -1,34 +1,36 @@
 #ifndef OPTION_HPP_
 #define OPTION_HPP_
 
-template<class asset, class date>
-class Option {
+#include <utility>
+#include "utility.hpp"
+
+struct Option {
 public:
   Option() = default;
   explicit Option(double strike_price, double volatility, double interest_rate,
-                  date expire_date, asset underlying_asset):
-            strike_price_(strike_price), volatility_(volatility), interest_rate_(interest_rate),
-            expire_date_(expire_date), underlying_asset_(underlying_asset) {}
+                  uint32_t expire_date, double underlying_asset):
+            K_(strike_price), Vol_(volatility), r_(interest_rate),
+            b_(interest_rate), T_(expire_date), underlying_asset_(underlying_asset) {
+              this->T_ = this->T_ / 365.0;
+            }
 
-  Option(const Option &other) : strike_price_(other.strike_price_), volatility_(other.volatility_),
-            interest_rate_(other.interest_rate_), expire_date_(other.expire_date_),
+  Option(const Option &other) : K_(other.K_), Vol_(other.Vol_),
+            r_(other.r_), b_(other.b_), T_(other.T_),
             underlying_asset_(other.underlying_asset_) {}
 
-  Option(Option &&other) noexcept : strike_price_(other.strike_price_), volatility_(other.volatility_),
-            interest_rate_(other.interest_rate_), expire_date_(std::move(other.expire_date_)),
-            underlying_asset_(std::move(other.underlying_asset_)) {}
+  Option(Option &&other) noexcept : K_(other.K_), Vol_(other.Vol_),
+            r_(other.r_), b_(other.b_), T_(other.T_),
+            underlying_asset_(other.underlying_asset_) {}
 
   ~Option() = default;
 
   Option& operator=(const Option &other) {
     if (this == &other) return *this;
-    this->strike_price_ = other.strike_price_;
-    this->volatility_ = other.volatility_;
-    this->interest_rate_ = other.interest_rate_;
-    // TODO: Careful if the implementation of date is change,
-    // that the way of copy expire_date_ should be rewrite.
-    this->expire_date_ = other.expire_date_;
-    // TODO: ditto
+    this->K_ = other.K_;
+    this->Vol_ = other.Vol_;
+    this->r_ = other.r_;
+    this->b_ = other.b_;
+    this->T_ = other.T_;
     this->underlying_asset_ = other.underlying_asset_;
 
     return *this;
@@ -36,30 +38,47 @@ public:
 
   Option& operator=(Option &&other) noexcept {
     if (this == &other) return *this;
-    this->strike_price_ = other.strike_price_;
-    this->volatility_ = other.volatility_;
-    this->interest_rate_ = other.interest_rate_;
-    // TODO: Careful if the implementation of date is change,
-    // that the way of copy expire_date_ should be rewrite.
-    this->expire_date_ = std::move(other.expire_date_);
-    // TODO: ditto
-    this->underlying_asset_ = std::move(other.underlying_asset_);
+    this->K_ = other.K_;
+    this->Vol_ = other.Vol_;
+    this->r_ = other.r_;
+    this->b_ = other.b_;
+    this->T_ = other.T_;
+    this->underlying_asset_ = other.underlying_asset_;
 
     return *this;
   }
 
-  double get_strike_price(void) { return this->strike_price_; }
-  double get_volatility(void) { return this->volatility_; }
-  double get_interest_rate(void) { return this->interest_rate_; }
-  date get_expire_date(void) { return this->expire_date_; }
-  asset get_underlying_asset(void) { return this->underlying_asset_; }
+  double K_;  // strike price
+  double Vol_; // Volatility
+  double r_; // Interest rate or Risk free rate
+  double b_;
+  double T_; // Day to expire date
+  double underlying_asset_;
+};
+
+class OptionGreek {
+public:
+  OptionGreek() : OptPtr_(nullptr) {};
+  explicit OptionGreek(Option *ptr) : OptPtr_(ptr) {}
+  explicit OptionGreek(Option &obj) {
+    this->OptPtr_ = new Option(obj);
+  }
+
+  // Want to forbid copy constructor and assignment operator
+  OptionGreek(const OptionGreek& c) = delete;
+  OptionGreek& operator = (const OptionGreek& c) = delete;
+  // The abstract interface
+  virtual double execute(double S) = 0;
+  // Implement as function object; example of Template Method Pattern
+  virtual double operator () (double S) {
+    // Call derived class' execute()
+    return execute(S);
+  }
+
+  virtual ~OptionGreek() {};
 
 protected:
-  double strike_price_;
-  double volatility_;
-  double interest_rate_;
-  date expire_date_;
-  asset underlying_asset_;
+  Option *OptPtr_;
 };
 
 #endif // OPTION_HPP_

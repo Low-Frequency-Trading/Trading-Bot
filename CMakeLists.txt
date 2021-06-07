@@ -24,6 +24,12 @@ endif()
 option(USE_CLANG_TIDY "use clang-tidy" OFF)
 option(LINT_AS_ERRORS "clang-tidy warnings as errors" OFF)
 
+find_package(Boost REQUIRED)
+if(Boost_FOUND)
+  message(STATUS "Boost library found !!")
+  include_directories(${Boost_INCLUDE_DIRS})
+endif(Boost_FOUND)
+
 find_program(
     CLANG_TIDY_EXE
     NAMES "clang-tidy"
