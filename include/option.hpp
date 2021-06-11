@@ -7,18 +7,18 @@
 struct Option {
 public:
   Option() = default;
-  explicit Option(double strike_price, double volatility, double interest_rate,
+  explicit Option(double premium, double strike_price, double volatility, double interest_rate,
                   uint32_t expire_date, double underlying_asset):
-            K_(strike_price), Vol_(volatility), r_(interest_rate),
+            premium_(premium), K_(strike_price), Vol_(volatility), r_(interest_rate),
             b_(interest_rate), T_(expire_date), underlying_asset_(underlying_asset) {
               this->T_ = this->T_ / 365.0;
             }
 
-  Option(const Option &other) : K_(other.K_), Vol_(other.Vol_),
+  Option(const Option &other) : premium_(other.premium_), K_(other.K_), Vol_(other.Vol_),
             r_(other.r_), b_(other.b_), T_(other.T_),
             underlying_asset_(other.underlying_asset_) {}
 
-  Option(Option &&other) noexcept : K_(other.K_), Vol_(other.Vol_),
+  Option(Option &&other) noexcept : premium_(other.premium_), K_(other.K_), Vol_(other.Vol_),
             r_(other.r_), b_(other.b_), T_(other.T_),
             underlying_asset_(other.underlying_asset_) {}
 
@@ -26,6 +26,7 @@ public:
 
   Option& operator=(const Option &other) {
     if (this == &other) return *this;
+    this->premium_= other.premium_;
     this->K_ = other.K_;
     this->Vol_ = other.Vol_;
     this->r_ = other.r_;
@@ -38,6 +39,7 @@ public:
 
   Option& operator=(Option &&other) noexcept {
     if (this == &other) return *this;
+    this->premium_= other.premium_;
     this->K_ = other.K_;
     this->Vol_ = other.Vol_;
     this->r_ = other.r_;
@@ -48,6 +50,7 @@ public:
     return *this;
   }
 
+  double premium_; // Option's market value
   double K_;  // strike price
   double Vol_; // Volatility
   double r_; // Interest rate or Risk free rate

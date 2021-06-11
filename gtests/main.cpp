@@ -3,11 +3,11 @@
 #include "put_option.hpp"
 
 TEST(OptionTest, CopyConstructor) {
-  Option *test_obj = new Option(100.0, 0.2, 0.01, 10.0, 100.0);
+  Option *test_obj = new Option(1.0, 100.0, 0.2, 0.01, 10.0, 100.0);
   Option copy_obj(*test_obj);
 
   EXPECT_NE(&copy_obj, test_obj);
-
+  EXPECT_EQ(test_obj->premium_, copy_obj.premium_);
   EXPECT_EQ(test_obj->K_, copy_obj.K_);
   EXPECT_EQ(test_obj->Vol_, copy_obj.Vol_);
   EXPECT_EQ(test_obj->r_, copy_obj.r_);
@@ -16,7 +16,7 @@ TEST(OptionTest, CopyConstructor) {
 }
 
 TEST(OptionTest, Call_Greek) {
-  Option *opt = new Option(597.5, 0.5392, 0.0156, 14.0, 599.05);
+  Option *opt = new Option(0.0, 597.5, 0.5392, 0.0156, 14.0, 599.05);
 
   CallDelta Delta(opt);
   CallGamma Gamma(opt);
@@ -34,7 +34,7 @@ TEST(OptionTest, Call_Greek) {
 }
 
 TEST(OptionTest, Put_Greek) {
-  Option *opt = new Option(597.5, 0.5392, 0.0156, 14.0, 599.05);
+  Option *opt = new Option(0.0, 597.5, 0.5392, 0.0156, 14.0, 599.05);
 
   PutDelta Delta(opt);
   PutGamma Gamma(opt);
