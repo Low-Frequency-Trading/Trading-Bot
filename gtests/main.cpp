@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "call_option.hpp"
 #include "put_option.hpp"
+#include "newton_raphson.hpp"
 
 TEST(OptionTest, CopyConstructor) {
   Option *test_obj = new Option(1.0, 100.0, 0.2, 0.01, 10.0, 100.0);
@@ -49,6 +50,21 @@ TEST(OptionTest, Put_Greek) {
   EXPECT_FALSE(std::signbit(Vega(opt->underlying_asset_)));
   EXPECT_TRUE(std::signbit(Theta(opt->underlying_asset_)));
   EXPECT_TRUE(std::signbit(Rho(opt->underlying_asset_)));
+}
+
+TEST(SolverTest, NewtonRaphson) {
+  using func_type = std::function<double (double)>;
+  func_type f = [](double x) -> double {
+      return x * x * x - x * x + 2.0;
+  };
+
+  func_type f_prime = [](double x) -> double {
+      return 3.0 * x * x - 2.0 * x;
+  };
+
+  NewtonRaphson solver(f, f_prime, 1e-5);
+
+  EXPECT_NEAR(solver.solve(10.0, 0.0), -1.0, 1e-4);
 }
 
 int main(int argc, char **argv)
