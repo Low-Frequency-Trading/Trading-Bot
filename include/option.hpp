@@ -11,7 +11,7 @@ public:
                   uint32_t expire_date, double underlying_asset):
             premium_(premium), K_(strike_price), Vol_(volatility), r_(interest_rate),
             b_(interest_rate), T_(expire_date), underlying_asset_(underlying_asset) {
-              this->T_ = this->T_ / 365.0;
+              this->T_ = this->T_ / 252.0;
             }
 
   Option(const Option &other) : premium_(other.premium_), K_(other.K_), Vol_(other.Vol_),
@@ -80,6 +80,7 @@ public:
 
   virtual ~OptionGreek() {};
 
+  Option* get_OptPtr() { return this->OptPtr_; }
 protected:
   Option *OptPtr_;
 };
