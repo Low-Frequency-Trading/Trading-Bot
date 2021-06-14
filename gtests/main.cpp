@@ -2,6 +2,7 @@
 #include "call_option.hpp"
 #include "put_option.hpp"
 #include "newton_raphson.hpp"
+#include "implied_volatility.hpp"
 
 TEST(OptionTest, CopyConstructor) {
   Option *test_obj = new Option(1.0, 100.0, 0.2, 0.01, 10.0, 100.0);
@@ -65,6 +66,13 @@ TEST(SolverTest, NewtonRaphson) {
   NewtonRaphson solver(f, f_prime, 1e-5);
 
   EXPECT_NEAR(solver.solve(10.0, 0.0), -1.0, 1e-4);
+}
+
+TEST(IVTets, IV) {
+  Option *opt = new Option(0.0, 100.0, 0.3, 0.05, 252.0, 100.0);
+  CallImpVol IV(opt);
+
+  EXPECT_NEAR(IV(10.5), 0.201317, 1e-4);
 }
 
 int main(int argc, char **argv)
