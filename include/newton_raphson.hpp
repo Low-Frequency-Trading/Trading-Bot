@@ -31,7 +31,7 @@ public:
         if (dx == 0.0) {
           throw std::runtime_error("g_prime equal to zero !!\n");
         }
-        root += (target_value - y) / this->g_prime_(root);
+        root += (target_value - y) / dx;
         y = this->g_(root);
         iter++;
       }
